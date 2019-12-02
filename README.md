@@ -12,3 +12,7 @@ cargo build --release
 ```shell
 cargo test
 ```
+
+## License
+
+MIT

@@ -3,5 +3,6 @@ name = "aocrs"
 version = "0.1.0"
 authors = ["Alex Gherghisan <alexghr@users.noreply.github.com>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
