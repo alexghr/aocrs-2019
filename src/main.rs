@@ -1,5 +1,7 @@
 extern crate aocrs;
 
+use aocrs::day1;
+
 use std::env;
 use std::fs;
 
@@ -15,7 +17,7 @@ fn main() {
     let config = parse_args();
     let input_data = read_input_data(&config.input_filename);
 
-    let total_fuel = aocrs::calculate_total_fuel(&input_data);
+    let total_fuel = day1::calculate_total_fuel(&input_data);
     println!("total fuel needed: {}", total_fuel);
 }
 
