@@ -28,6 +28,10 @@ impl IntcodeInterpreter {
         }
     }
 
+    pub fn get(&self, at: usize) -> i32 {
+        self.memory[at]
+    }
+
     fn execute_op(&mut self, op: &Op) -> bool {
         match op {
             Op::Sum(loc_1, loc_2, loc_result) => {
