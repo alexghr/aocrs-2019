@@ -45,16 +45,31 @@ fn read_intcode_src(filename: &str) -> Vec<i32> {
 }
 
 fn run_day_2(config: &Config) {
-    let mut intcode_src = read_intcode_src(&config.input_filename);
+    let intcode_src = read_intcode_src(&config.input_filename);
 
+    // Part 1
     // the challenge says we have to do this
-    intcode_src[1] = 12;
-    intcode_src[2] = 2;
+    // intcode_src[1] = 12;
+    // intcode_src[2] = 2;
+    // let mut program = day2::IntcodeInterpreter::new(intcode_src);
+    // let response = program.execute();
 
-    let mut program = day2::IntcodeInterpreter::new(intcode_src);
-    program.execute();
+    // println!("value at position 0: {}", response);
 
-    println!("value at position 0: {}", program.get(0));
+    'outer: for i in 0..100 {
+        for j in 0..100 {
+            let mut test_memory = intcode_src.clone();
+            test_memory[1] = i;
+            test_memory[2] = j;
+
+            let mut program = day2::IntcodeInterpreter::new(test_memory);
+            let response = program.execute();
+            if response == 19690720 {
+                println!("Found answer {} with noun {} and verb {}", response, i, j);
+                break 'outer;
+            }
+        }
+    }
 }
 
 fn run_day_1(config: &Config) {

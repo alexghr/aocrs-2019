@@ -7,77 +7,69 @@ enum Op {
 
 pub struct IntcodeInterpreter {
     memory: Vec<i32>,
-    head: usize,
+    instruction_pointer: usize,
 }
 
 impl IntcodeInterpreter {
-    pub fn new(source: Vec<i32>) -> IntcodeInterpreter {
+    pub fn new(memory: Vec<i32>) -> IntcodeInterpreter {
         IntcodeInterpreter {
-            memory: source,
-            head: 0,
+            memory,
+            instruction_pointer: 0,
         }
     }
 
-    pub fn execute(&mut self) {
+    pub fn execute(&mut self) -> i32 {
         loop {
-            let op = self.parse_op_at_head();
+            let op = self.parse_op(self.instruction_pointer);
 
-            if !self.execute_op(&op) {
-                break;
+            match op {
+                Op::Sum(a_address, b_address, result_address) => {
+                    self.memory[result_address] = self.memory[a_address] + self.memory[b_address];
+                    self.instruction_pointer += 4;
+                }
+
+                Op::Multiply(a_address, b_address, result_address) => {
+                    self.memory[result_address] = self.memory[a_address] * self.memory[b_address];
+                    self.instruction_pointer += 4;
+                }
+
+                Op::Halt => break,
             }
         }
+
+        self.memory[0]
     }
 
-    pub fn get(&self, at: usize) -> i32 {
-        self.memory[at]
-    }
-
-    fn execute_op(&mut self, op: &Op) -> bool {
-        match op {
-            Op::Sum(loc_1, loc_2, loc_result) => {
-                self.memory[*loc_result] = self.memory[*loc_1] + self.memory[*loc_2];
-                true
-            }
-
-            Op::Multiply(loc_1, loc_2, loc_result) => {
-                self.memory[*loc_result] = self.memory[*loc_1] * self.memory[*loc_2];
-                true
-            }
-
-            Op::Halt => false,
-        }
-    }
-
-    fn parse_op_at_head(&mut self) -> Op {
-        let op_code = self.memory[self.head];
-        self.head += 1;
+    fn parse_op(&self, at: usize) -> Op {
+        let op_code = self.memory[at];
 
         match op_code {
             99 => Op::Halt,
+
             1 => Op::Sum(
-                self.read_pointer_at_head(),
-                self.read_pointer_at_head(),
-                self.read_pointer_at_head(),
+                self.read_address(at + 1),
+                self.read_address(at + 2),
+                self.read_address(at + 3),
             ),
+
             2 => Op::Multiply(
-                self.read_pointer_at_head(),
-                self.read_pointer_at_head(),
-                self.read_pointer_at_head(),
+                self.read_address(at + 1),
+                self.read_address(at + 2),
+                self.read_address(at + 3),
             ),
 
             _ => panic!("Unknown op code"),
         }
     }
 
-    fn read_pointer_at_head(&mut self) -> usize {
-        let pos = self.memory[self.head];
-        self.head += 1;
+    fn read_address(&self, at: usize) -> usize {
+        let pos = self.memory[at];
 
         if pos < 0 || (pos as usize) >= self.memory.len() {
             panic!("Invalid memory referenced");
         }
 
-        return pos as usize;
+        pos as usize
     }
 }
 
@@ -86,52 +78,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_sum() {
-        let mut prg = IntcodeInterpreter::new(vec![123, 243, 0]);
-        let op = Op::Sum(0, 1, 2);
-
-        prg.execute_op(&op);
-        assert_eq!(prg.memory, vec![123, 243, 366]);
-    }
-
-    #[test]
-    fn test_mul() {
-        let mut prg = IntcodeInterpreter::new(vec![2, 243, 0]);
-        let op = Op::Multiply(0, 1, 2);
-
-        prg.execute_op(&op);
-        assert_eq!(prg.memory, vec![2, 243, 486]);
-    }
-
-    #[test]
-    fn test_halt() {
-        let mut prg = IntcodeInterpreter::new(vec![2, 243, 0]);
-        let op = Op::Halt;
-
-        prg.execute_op(&op);
-        assert_eq!(prg.memory, vec![2, 243, 0]);
-    }
-
-    #[test]
     fn test_parse_op_sum() {
-        let mut prg = IntcodeInterpreter::new(vec![1, 4, 5, 6, 2, 243, 0]);
-        let op = prg.parse_op_at_head();
+        let prg = IntcodeInterpreter::new(vec![1, 4, 5, 6, 2, 243, 0]);
+        let op = prg.parse_op(0);
 
         assert_eq!(op, Op::Sum(4, 5, 6));
     }
 
     #[test]
     fn test_parse_op_multiply() {
-        let mut prg = IntcodeInterpreter::new(vec![2, 4, 5, 6, 2, 243, 0]);
-        let op = prg.parse_op_at_head();
+        let prg = IntcodeInterpreter::new(vec![2, 4, 5, 6, 2, 243, 0]);
+        let op = prg.parse_op(0);
 
         assert_eq!(op, Op::Multiply(4, 5, 6));
     }
 
     #[test]
     fn test_parse_op_halt() {
-        let mut prg = IntcodeInterpreter::new(vec![99, 4, 5, 6, 2, 243, 0]);
-        let op = prg.parse_op_at_head();
+        let prg = IntcodeInterpreter::new(vec![99, 4, 5, 6, 2, 243, 0]);
+        let op = prg.parse_op(0);
 
         assert_eq!(op, Op::Halt);
     }
