@@ -2,6 +2,7 @@ extern crate aocrs;
 
 use aocrs::day1;
 use aocrs::day2;
+use aocrs::day3;
 
 use std::env;
 use std::fs;
@@ -12,6 +13,7 @@ fn main() {
     match config.day {
         1 => run_day_1(&config),
         2 => run_day_2(&config),
+        3 => run_day_3(&config),
         _ => panic!("Unrecognized day"),
     }
 }
@@ -21,6 +23,14 @@ fn read_input_data(filename: &str) -> Vec<u32> {
         .unwrap()
         .split_whitespace()
         .map(|val| val.parse().unwrap())
+        .collect()
+}
+
+fn read_file(filename: &str) -> Vec<String> {
+    fs::read_to_string(&filename)
+        .unwrap()
+        .split('\n')
+        .map(|val| String::from(val))
         .collect()
 }
 
@@ -77,6 +87,18 @@ fn run_day_1(config: &Config) {
 
     let total_fuel = day1::calculate_total_fuel(&input_data);
     println!("total fuel needed: {}", total_fuel);
+}
+
+fn run_day_3(config: &Config) {
+    let input = read_file(&config.input_filename);
+    let wire_a = &input[0];
+    let wire_b = &input[1];
+
+    let distance = day3::run(&wire_a, &wire_b);
+    match distance {
+        Some(d) => println!("intersection point distance: {}", d),
+        None => println!("Wires do not intersect")
+    }
 }
 
 fn parse_args() -> Config {

@@ -1,18 +1,20 @@
-pub enum Direction {
-    Up(u32),
-    Right(u32),
-    Down(u32),
-    Left(u32)
+type Vector = (i32, i32);
+type LineSegment = (Vector, Vector);
+
+const ORIGIN: Vector = (0, 0);
+
+pub fn run(wire_a_input: &str, wire_b_input: &str) -> Option<u32> {
+    let wire_a = gen_lines(&direction::parse_input(wire_a_input));
+    let wire_b = gen_lines(&direction::parse_input(wire_b_input));
+
+    match find_intersection_point(&wire_a, &wire_b) {
+        Some(point) => Some(manhattan_distance(&point, &ORIGIN)),
+        None => None
+    }
 }
 
-type Point = (i32, i32);
-type LineSegment = (Point, Point);
-
-pub fn find_intersection_point(wire_1: &Vec<Direction>, wire_2: &Vec<Direction>) -> Option<Point> {
-    let a = gen_lines(wire_1);
-    let b = gen_lines(wire_2);
-
-    let mut min_point: Option<Point> = None;
+pub fn find_intersection_point(a: &Vec<LineSegment>, b: &Vec<LineSegment>) -> Option<Vector> {
+    let mut min_point: Option<Vector> = None;
 
     a.iter().for_each(|segment_a| {
         b.iter().for_each(|segment_b| {
@@ -20,7 +22,7 @@ pub fn find_intersection_point(wire_1: &Vec<Direction>, wire_2: &Vec<Direction>)
                 Some(point) => {
                     match min_point {
                         Some(existing_min) => {
-                            if (manhattan_distance(&point, &(0, 0)) < manhattan_distance(&existing_min, &(0, 0))) {
+                            if manhattan_distance(&point, &ORIGIN) < manhattan_distance(&existing_min, &ORIGIN) {
                                 min_point = Some(point);
                             }
                         },
@@ -38,7 +40,7 @@ pub fn find_intersection_point(wire_1: &Vec<Direction>, wire_2: &Vec<Direction>)
 /**
  * http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
  */
-fn intersects(a: &LineSegment, b: &LineSegment) -> Option<Point> {
+fn intersects(a: &LineSegment, b: &LineSegment) -> Option<Vector> {
     let ((x1, y1), (x2, y2)) = a;
     let ((x3, y3), (x4, y4)) = b;
 
@@ -54,50 +56,71 @@ fn intersects(a: &LineSegment, b: &LineSegment) -> Option<Point> {
      }
 }
 
-fn gen_lines(dirs: &Vec<Direction>) -> Vec<LineSegment> {
-    let origin: Point = (0, 0);
-    dirs.iter().fold(Vec::new(), |list, dir| {
+fn gen_lines(dirs: &Vec<Vector>) -> Vec<LineSegment> {
+    dirs.iter().fold(Vec::new(), |list, delta| {
         let new_line = match list.last() {
-            Some((_, prev)) => (*prev, next_point(&prev, &dir)),
-            None => (origin, next_point(&origin, &dir))
+            Some((_, prev)) => (*prev, next_point(&prev, &delta)),
+            None => (ORIGIN, next_point(&ORIGIN, &delta))
         };
 
         [list, vec![new_line]].concat()
     })
 }
 
-fn gen_points(wire: &Vec<Direction>) -> Vec<Point> {
-    let origin: Point = (0, 0);
-
-    wire.iter().fold(vec![origin], |list, dir| {
-        let last = list.last().unwrap();
-        let next = next_point(last, &dir);
-
-        [list, vec![next]].concat()
-    })
+fn next_point(start: &Vector, delta: &Vector) -> Vector {
+    return (start.0 + delta.0, start.1 + delta.1);
 }
 
-fn next_point(start: &Point, delta: &Direction) -> Point {
-    match delta {
-        Direction::Up(dy) => (start.0, start.1 + *dy as i32),
-        Direction::Right(dx) => (start.0 + *dx as i32, start.1),
-        Direction::Down(dy) => (start.0, start.1 - *dy as i32),
-        Direction::Left(dx) => (start.0 - *dx as i32, start.1),
-    }
-}
-
-fn manhattan_distance(a: &Point, b: &Point) -> u32 {
+fn manhattan_distance(a: &Vector, b: &Vector) -> u32 {
     ((a.0 - b.0).abs() + (a.1 - b.1).abs()) as u32
+}
+
+mod direction {
+    use super::Vector;
+
+    pub fn parse_input(input: &str) -> Vec<Vector> {
+        input.split(',').map(|chunk| {
+            // chunk looks like R111
+            // split after the first character
+            let (dir, delta_str) = chunk.split_at(1);
+            let delta: u32 = delta_str.parse().unwrap();
+
+            match dir {
+                "U" => up(delta),
+                "R" => right(delta),
+                "D" => down(delta),
+                "L" => left(delta),
+                _ => panic!(format!("Unrecognized input {} {}", dir, delta))
+            }
+        })
+        .collect()
+    }
+
+    pub fn up(dy: u32) -> Vector {
+        (0, dy as i32)
+    }
+
+    pub fn right(dx: u32) -> Vector {
+        (dx as i32, 0)
+    }
+
+    pub fn down(dy: u32) -> Vector {
+        (0, -1 * dy as i32)
+    }
+
+    pub fn left(dx: u32) -> Vector {
+        (-1 * dx as i32, 0)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::Direction::*;
+    use super::direction::*;
 
     #[test]
     fn test_intersection() {
-        let tests: Vec<(LineSegment, LineSegment, Option<Point>)> = vec![
+        let tests: Vec<(LineSegment, LineSegment, Option<Vector>)> = vec![
             (((10, 5), (20, 5)), ((13, 2), (13, 10)), Some((13, 5))),
             (((8, 5),  (3, 5)),  ((6, 7),  (6, 3)),   Some((6, 5))),
             (((0, 0),  (10, 0)), ((0, -2), (-1, -2)), None)
@@ -110,8 +133,8 @@ mod tests {
 
     #[test]
     fn test_problem() {
-        let wire_a = vec![Right(8), Up(5), Left(5), Down(3)];
-        let wire_b = vec![Up(7), Right(6), Down(4), Left(4)];
+        let wire_a = vec![right(8), up(5), left(5), down(3)];
+        let wire_b = vec![up(7), right(6), down(4), left(4)];
 
         let point = find_intersection_point(&wire_a, &wire_b);
         assert_eq!(point, Some((3, 3)));
