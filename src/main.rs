@@ -97,7 +97,7 @@ fn run_day_3(config: &Config) {
     let distance = day3::run(&wire_a, &wire_b);
     match distance {
         Some(d) => println!("intersection point distance: {}", d),
-        None => println!("Wires do not intersect")
+        None => println!("Wires do not intersect"),
     }
 }
 
