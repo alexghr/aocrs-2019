@@ -3,4 +3,14 @@
 [[package]]
 name = "aocrs"
 version = "0.1.0"
+dependencies = [
+ "tramp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
+[[package]]
+name = "tramp"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum tramp 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b1ee032eda9f2e819b93fed2bbb2ea4e459b78cd0141b9e3644ec6dc013b2cf4"

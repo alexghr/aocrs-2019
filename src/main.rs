@@ -3,6 +3,7 @@ extern crate aocrs;
 use aocrs::day1;
 use aocrs::day2;
 use aocrs::day3;
+use aocrs::day4;
 
 use std::env;
 use std::fs;
@@ -14,6 +15,7 @@ fn main() {
         1 => run_day_1(&config),
         2 => run_day_2(&config),
         3 => run_day_3(&config),
+        4 => run_day_4(&config),
         _ => panic!("Unrecognized day"),
     }
 }
@@ -99,6 +101,10 @@ fn run_day_3(config: &Config) {
         Some(d) => println!("intersection point distance: {}", d),
         None => println!("Wires do not intersect"),
     }
+}
+
+fn run_day_4(_: &Config) {
+    println!("matched: {}", day4::brute_force(231832, 767346));
 }
 
 fn parse_args() -> Config {
