@@ -17,21 +17,22 @@ pub fn brute_force(lo: u32, hi: u32) -> u32 {
 }
 
 fn rule_duplicate_digit(n: u32) -> bool {
-    fn rec_rule(n: u32) -> Rec<bool> {
-        if n < 10 {
-            rec_ret!(false)
+    fn recurse(n: u32, prev_digit: u32, cnt: u32) -> Rec<bool> {
+        if n == 0 {
+            rec_ret!(cnt == 2)
         }
 
-        let digit_a = n % 10;
-        let digit_b = (n / 10) % 10;
-        if digit_a == digit_b {
+        let digit = n % 10;
+        if digit == prev_digit {
+            rec_call!(recurse(n / 10, digit, cnt + 1))
+        } else if cnt == 2 {
             rec_ret!(true)
+        } else {
+            rec_call!(recurse(n / 10, digit, 1))
         }
-
-        rec_call!(rec_rule(n / 10))
     }
 
-    tramp(rec_rule(n))
+    tramp(recurse(n / 10, n % 10, 1))
 }
 
 fn rule_increasing_digits(n: u32) -> bool {
