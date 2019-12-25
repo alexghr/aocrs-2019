@@ -174,12 +174,12 @@ mod tests {
         });
     }
 
-    #[test]
-    fn test_pt_1() {
-        let wire_a = vec![right(8), up(5), left(5), down(3)];
-        let wire_b = vec![up(7), right(6), down(4), left(4)];
+    // #[test]
+    // fn test_pt_1() {
+    //     let wire_a = vec![right(8), up(5), left(5), down(3)];
+    //     let wire_b = vec![up(7), right(6), down(4), left(4)];
 
-        let point = find_intersection_point_pt_1(&wire_a, &wire_b);
-        assert_eq!(point, Some((3, 3)));
-    }
+    //     let point = find_intersection_point_pt_1(&wire_a, &wire_b);
+    //     assert_eq!(point, Some((3, 3)));
+    // }
 }

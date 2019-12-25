@@ -1,6 +1,6 @@
-use crate::intcode::IntcodeInterpreter;
+use crate::intcode::Interpreter;
 
-pub fn run(src: &Vec<i32>) {
+pub fn run(src: &Vec<isize>) {
     // Part 1
     // the challenge says we have to do this
     // intcode_src[1] = 12;
@@ -16,10 +16,10 @@ pub fn run(src: &Vec<i32>) {
             test_memory[1] = i;
             test_memory[2] = j;
 
-            let mut program = IntcodeInterpreter::new(test_memory);
-            let response = program.execute();
-            if response == 19690720 {
-                println!("Found answer {} with noun {} and verb {}", response, i, j);
+            let mut program = Interpreter::from_bytecode(&test_memory);
+            program.execute();
+            if program.read(0) == 19690720 {
+                println!("Found answer {} with noun {} and verb {}", 19690720, i, j);
                 break 'outer;
             }
         }

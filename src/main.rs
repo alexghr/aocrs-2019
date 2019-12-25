@@ -4,6 +4,7 @@ use aocrs::day1;
 use aocrs::day2;
 use aocrs::day3;
 use aocrs::day4;
+use aocrs::day5;
 
 use std::env;
 use std::fs;
@@ -16,6 +17,7 @@ fn main() {
         2 => run_day_2(&config),
         3 => run_day_3(&config),
         4 => run_day_4(&config),
+        5 => run_day_5(&config),
         _ => panic!("Unrecognized day"),
     }
 }
@@ -36,14 +38,14 @@ fn read_file(filename: &str) -> Vec<String> {
         .collect()
 }
 
-fn read_intcode_src(filename: &str) -> Vec<i32> {
+fn read_intcode_src(filename: &str) -> Vec<isize> {
     fs::read_to_string(filename)
         .unwrap()
         // ignore whitespace
         .split_whitespace()
         .flat_map(|line| {
             line.split(',').flat_map(|val| {
-                let word = val.parse::<i32>();
+                let word = val.parse::<isize>();
                 match word {
                     Ok(val) => vec![val],
                     Err(_) => {
@@ -57,19 +59,19 @@ fn read_intcode_src(filename: &str) -> Vec<i32> {
 }
 
 fn run_day_2(config: &Config) {
-    let intcode_src = read_intcode_src(&config.input_filename);
+    let intcode_src = read_intcode_src(config.input_filename.as_ref().unwrap());
     day2::run(&intcode_src);
 }
 
 fn run_day_1(config: &Config) {
-    let input_data = read_input_data(&config.input_filename);
+    let input_data = read_input_data(config.input_filename.as_ref().unwrap());
 
     let total_fuel = day1::calculate_total_fuel(&input_data);
     println!("total fuel needed: {}", total_fuel);
 }
 
 fn run_day_3(config: &Config) {
-    let input = read_file(&config.input_filename);
+    let input = read_file(config.input_filename.as_ref().unwrap());
     let wire_a = &input[0];
     let wire_b = &input[1];
 
@@ -84,15 +86,23 @@ fn run_day_4(_: &Config) {
     println!("matched: {}", day4::brute_force(231832, 767346));
 }
 
+fn run_day_5(_: &Config) {
+    day5::part1();
+}
+
 fn parse_args() -> Config {
     let options: Vec<String> = env::args().collect();
     Config {
         day: options[1].parse().unwrap(),
-        input_filename: String::clone(&options[2]),
+        input_filename: if options.len() >= 3 {
+            Some(String::clone(&options[2]))
+        } else {
+            None
+        },
     }
 }
 
 struct Config {
-    input_filename: String,
+    input_filename: Option<String>,
     day: u32,
 }
