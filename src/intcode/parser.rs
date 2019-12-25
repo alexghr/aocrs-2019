@@ -8,6 +8,13 @@ type ImmediateMode = isize;
 pub enum Op {
     Sum(Param, Param, PositionMode),
     Multiply(Param, Param, PositionMode),
+
+    LessThan(Param, Param, PositionMode),
+    Equals(Param, Param, PositionMode),
+
+    JumpIfTrue(Param, Param),
+    JumpIfFalse(Param, Param),
+
     Input(PositionMode),
     Output(PositionMode),
     Halt,
@@ -50,6 +57,28 @@ impl Parser {
             3 => Op::Input(self.memory.read_address(at + 1)),
 
             4 => Op::Output(self.memory.read_address(at + 1)),
+
+            5 => Op::JumpIfTrue(
+                self.read_parameter(at + 1, param_modes % 10),
+                self.read_parameter(at + 2, param_modes / 10 % 10),
+            ),
+
+            6 => Op::JumpIfFalse(
+                self.read_parameter(at + 1, param_modes % 10),
+                self.read_parameter(at + 2, param_modes / 10 % 10),
+            ),
+
+            7 => Op::LessThan(
+                self.read_parameter(at + 1, param_modes % 10),
+                self.read_parameter(at + 2, param_modes / 10 % 10),
+                self.memory.read_address(at + 3),
+            ),
+
+            8 => Op::Equals(
+                self.read_parameter(at + 1, param_modes % 10),
+                self.read_parameter(at + 2, param_modes / 10 % 10),
+                self.memory.read_address(at + 3),
+            ),
 
             x => panic!(format!("Unknown op code {}", x)),
         }

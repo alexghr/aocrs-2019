@@ -64,12 +64,52 @@ impl Interpreter {
                     self.instruction_pointer += 2;
                 }
 
-                Op::Output(address) => {
-                    if writeln!(stdout(), "{}", self.memory.read(address)).is_ok() {
+                Op::Output(addr) => {
+                    if writeln!(stdout(), "{}", self.memory.read(addr)).is_ok() {
                         //
                     }
 
                     self.instruction_pointer += 2;
+                }
+
+                Op::JumpIfTrue(test, ip) => {
+                    if self.read_parameter(test) != 0 {
+                        self.instruction_pointer = self.read_parameter(ip) as usize;
+                    } else {
+                        self.instruction_pointer += 3;
+                    }
+                }
+
+                Op::JumpIfFalse(test, ip) => {
+                    if self.read_parameter(test) == 0 {
+                        self.instruction_pointer = self.read_parameter(ip) as usize;
+                    } else {
+                        self.instruction_pointer += 3;
+                    }
+                }
+
+                Op::LessThan(a, b, addr) => {
+                    self.memory.write(
+                        addr,
+                        if self.read_parameter(a) < self.read_parameter(b) {
+                            1
+                        } else {
+                            0
+                        },
+                    );
+                    self.instruction_pointer += 4;
+                }
+
+                Op::Equals(a, b, addr) => {
+                    self.memory.write(
+                        addr,
+                        if self.read_parameter(a) == self.read_parameter(b) {
+                            1
+                        } else {
+                            0
+                        },
+                    );
+                    self.instruction_pointer += 4;
                 }
 
                 _ => panic!("Unknown operation"),
